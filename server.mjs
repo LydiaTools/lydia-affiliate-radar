@@ -53,14 +53,14 @@ export function makeApp({dbPath=join(root,'data','radar.sqlite')}={}){
         store.db.prepare('INSERT INTO clicks(campaign_id,occurred_at,excluded) VALUES(?,?,?)').run(campaign.id,now(),Number(excluded));
         res.writeHead(302,{Location:link.url,'Cache-Control':'no-store','X-Robots-Tag':'noindex, nofollow'});res.end();return;
       }
-      if(req.method==='GET'&&path==='/api/health')return json(res,200,{app_id:'lydia-affiliate-radar',version:'0.1.0'});
+      if(req.method==='GET'&&path==='/api/health')return json(res,200,{app_id:'lydia-affiliate-radar',version:'0.1.1'});
       if(req.method==='GET'&&path==='/api/state'){
         const sec=secrets();const accounts=store.all('account');const decided=accounts.filter(a=>['approved','rejected'].includes(a.application_status));
-        return json(res,200,{csrf:token,profile:profile(),offers:enrichedOffers(),sources:store.all('source'),candidates:store.all('candidate'),links:store.all('link'),campaigns:store.all('campaign'),generations:store.all('generation'),runs:store.all('run').slice(-12).reverse(),analytics:strategy(store.all('campaign'),store.orders(),store.clicks()),orders:store.orders(),application_stats:{approved:decided.filter(a=>a.application_status==='approved').length,decided:decided.length,rate:decided.length?decided.filter(a=>a.application_status==='approved').length/decided.length:null,note:'本人的已结案申请记录；小样本不代表平台整体通过率'},integrations:{awin:{configured:!!sec.awin?.token,publisher_id:sec.awin?.publisher_id||'',live_verified_at:sec.awin?.live_verified_at||null},ai:{configured:!!sec.ai?.key,base_url:sec.ai?.base_url||'',model:sec.ai?.model||''}},version:'0.1.0'});
+        return json(res,200,{csrf:token,profile:profile(),offers:enrichedOffers(),shortlist:store.all('shortlist').filter(s=>s.saved),sources:store.all('source'),candidates:store.all('candidate'),links:store.all('link'),campaigns:store.all('campaign'),generations:store.all('generation'),runs:store.all('run').slice(-12).reverse(),analytics:strategy(store.all('campaign'),store.orders(),store.clicks()),orders:store.orders(),application_stats:{approved:decided.filter(a=>a.application_status==='approved').length,decided:decided.length,rate:decided.length?decided.filter(a=>a.application_status==='approved').length/decided.length:null,note:'本人的已结案申请记录；小样本不代表平台整体通过率'},integrations:{awin:{configured:!!sec.awin?.token,publisher_id:sec.awin?.publisher_id||'',live_verified_at:sec.awin?.live_verified_at||null},ai:{configured:!!sec.ai?.key,base_url:sec.ai?.base_url||'',model:sec.ai?.model||''}},version:'0.1.1'});
       }
       if(req.method==='GET'&&path==='/api/export'){
         res.setHeader('Content-Disposition','attachment; filename="lydia-radar-backup.json"');
-        return json(res,200,{version:1,exported_at:now(),profile:profile(),sources:store.all('source'),offers:store.all('offer'),accounts:store.all('account'),links:store.all('link'),campaigns:store.all('campaign'),orders:store.orders(),clicks:store.clicks(),generations:store.all('generation'),note:'个人链接和数据在此备份内；不含API密钥'});
+        return json(res,200,{version:1,exported_at:now(),profile:profile(),shortlist:store.all('shortlist').filter(s=>s.saved),sources:store.all('source'),offers:store.all('offer'),accounts:store.all('account'),links:store.all('link'),campaigns:store.all('campaign'),orders:store.orders(),clicks:store.clicks(),generations:store.all('generation'),note:'个人链接和数据在此备份内；不含API密钥'});
       }
       if(req.method==='GET'&&path==='/api/templates/orders.csv'){
         res.writeHead(200,{'Content-Type':'text/csv; charset=utf-8','Content-Disposition':'attachment; filename="orders-template.csv"'});res.end('\uFEFFnetwork,order_id,campaign_id,amount,currency,status,occurred_at,evidence\n');return;
@@ -72,6 +72,12 @@ export function makeApp({dbPath=join(root,'data','radar.sqlite')}={}){
         assert(!req.headers.origin||req.headers.origin===origin,'请求来源不匹配');assert(req.headers['x-lydia-csrf']===token,'请刷新页面后重试');assert(req.headers['content-type']?.startsWith('application/json'),'请求类型必须为 JSON');
         const b=await body(req);
         if(path==='/api/identify')return json(res,200,identifyLink(b.text));
+        if(path==='/api/shortlist'){
+          const o=getOffer(b.offer_id);assert(typeof b.saved==='boolean','指定收藏或取消收藏');
+          const previous=store.get('shortlist',o.id);
+          const item={id:o.id,offer_id:o.id,saved:b.saved,created_at:previous?.created_at||now(),updated_at:now()};
+          store.put('shortlist',o.id,item);return json(res,200,item);
+        }
         if(path==='/api/profile'){
           const p={...profile(),audience:cleanText(b.audience,300),channels:(b.channels||[]).filter(c=>channels[c]),payout_methods:(b.payout_methods||[]).map(v=>cleanText(v,50)),public_base_url:cleanText(b.public_base_url,300),refresh_on_start:b.refresh_on_start!==false};
           if(p.public_base_url)publicUrl(p.public_base_url,{httpsOnly:true});

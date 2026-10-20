@@ -1,10 +1,10 @@
 {
-  "version": "0.1.0",
+  "version": "0.1.1",
   "date": "2026-10-20",
   "automated_tests": {
-    "passed": 26,
+    "passed": 27,
     "failed": 0,
-    "log": "work/final-tests.txt"
+    "log": "work/screening-tests.txt"
   },
   "live_public_sources": {
     "research_records": 15,
@@ -51,8 +51,12 @@
       "官方活动详情与核验缺口可见",
       "手机清单保留付款门槛",
       "旅行类目录候选过滤为19项",
-      "n8n生成5个渠道的可编辑规则草稿"
-    ]
+      "n8n生成5个渠道的可编辑规则草稿",
+      "无账户收藏、我的候选、重载保存、取消与空状态",
+      "付款门槛已公开过滤为6项",
+      "选定后开通取链默认折叠，手机可展开"
+    ],
+    "console_errors": 0
   },
   "external_integrations": {
     "awin": "实现与契约模拟通过，未用本人账户实调",
@@ -76,5 +80,12 @@
   "model": {
     "recommendation": "Terra medium",
     "actual": "本会话既有模型；工具未提供可核验的具体型号与推理档位，未执行切换"
+  },
+  "screening_first": {
+    "no_affiliate_account_required": true,
+    "shortlist_persistent_after_restart": true,
+    "shortlist_changes_account_status_or_rank": false,
+    "personal_accounts_created": 0,
+    "active_shortlist_after_ui_qa": 0
   }
 }

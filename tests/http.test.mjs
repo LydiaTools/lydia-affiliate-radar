@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
+import { mkdtempSync,rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { makeApp } from '../server.mjs';
 const app=makeApp({dbPath:':memory:'});await new Promise(r=>app.server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+app.server.address().port;
 const state=await (await fetch(base+'/api/state')).json();
@@ -8,6 +11,22 @@ const post=async(path,b,extra={})=>{const r=await fetch(base+path,{method:'POST'
 test.after(()=>{app.server.close();app.store.db.close();});
 test('新安装不伪造流量、个人资格、收益和API连接',()=>{
   assert.equal(state.offers.length,15);assert.equal(state.campaigns.length,0);assert.equal(state.orders.length,0);assert(state.offers.every(o=>!o.ranking.ready));assert.equal(state.application_stats.rate,null);assert.equal(state.integrations.awin.configured,false);
+});
+test('无账户可收藏；重复保存、重启和取消不改变资格、分数或申请统计',async()=>{
+  const dir=mkdtempSync(join(tmpdir(),'lydia-shortlist-'));let isolated;
+  async function start(){isolated=makeApp({dbPath:join(dir,'radar.sqlite')});await new Promise(r=>isolated.server.listen(0,'127.0.0.1',r));return 'http://127.0.0.1:'+isolated.server.address().port;}
+  async function stop(){await new Promise(r=>isolated.server.close(r));isolated.store.db.close();}
+  try{
+    let local=await start();const before=await (await fetch(local+'/api/state')).json();
+    const save=async b=>{const r=await fetch(local+'/api/shortlist',{method:'POST',headers:{'Content-Type':'application/json','X-Lydia-CSRF':isolated.token},body:JSON.stringify(b)});return r.status;};
+    assert.equal((await save({offer_id:'n8n',saved:true})),200);assert.equal((await save({offer_id:'n8n',saved:true})),200);
+    assert.equal((await save({offer_id:'does-not-exist',saved:true})),400);assert.equal((await save({offer_id:'n8n',saved:'yes'})),400);
+    const backup=await (await fetch(local+'/api/export')).json();assert.equal(backup.shortlist.length,1);assert.equal(backup.accounts.length,0);
+    await stop();local=await start();const after=await (await fetch(local+'/api/state')).json();
+    assert.deepEqual(after.shortlist.map(s=>s.offer_id),['n8n']);assert.deepEqual(after.offers,before.offers);assert.deepEqual(after.application_stats,before.application_stats);assert.equal(after.links.length,0);
+    assert.equal((await save({offer_id:'n8n',saved:false})),200);assert.equal((await save({offer_id:'n8n',saved:false})),200);
+    assert.equal((await (await fetch(local+'/api/state')).json()).shortlist.length,0);
+  }finally{if(isolated?.server.listening)await stop();rmSync(dir,{recursive:true,force:true});}
 });
 test('跨站写入和DNS重绑定Host被拒绝',async()=>{
   assert.equal((await post('/api/identify',{text:'x'},{Origin:'https://evil.example'})).status,400);
