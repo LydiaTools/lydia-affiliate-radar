@@ -1,0 +1,80 @@
+{
+  "version": "0.1.0",
+  "date": "2026-10-20",
+  "automated_tests": {
+    "passed": 26,
+    "failed": 0,
+    "log": "work/final-tests.txt"
+  },
+  "live_public_sources": {
+    "research_records": 15,
+    "source_count": 27,
+    "readable": 21,
+    "failed": [
+      {
+        "name": "Coursera 官方联盟页",
+        "reason": "来源暂不可读取，需要登录、专用接口或稍后重试"
+      },
+      {
+        "name": "京东联盟",
+        "reason": "来源暂不可读取，需要登录、专用接口或稍后重试"
+      },
+      {
+        "name": "京东联盟开放平台",
+        "reason": "来源暂不可读取，需要登录、专用接口或稍后重试"
+      },
+      {
+        "name": "淘宝联盟",
+        "reason": "来源暂不可读取，需要登录、专用接口或稍后重试"
+      },
+      {
+        "name": "美团联盟",
+        "reason": "来源暂不可读取，需要登录、专用接口或稍后重试"
+      },
+      {
+        "name": "PartnerStack 项目目录",
+        "reason": "来源正文过大，已停止"
+      }
+    ],
+    "directory_candidates": 297,
+    "directory_no_public_program": 18,
+    "actual_personal_links": 0,
+    "actual_orders": 0,
+    "account_payout_verified": false
+  },
+  "browser_qa": {
+    "desktop_content_width": 1425,
+    "mobile_content_width": 375,
+    "mobile_window_width": 390,
+    "horizontal_overflow": false,
+    "actions": [
+      "官方活动详情与核验缺口可见",
+      "手机清单保留付款门槛",
+      "旅行类目录候选过滤为19项",
+      "n8n生成5个渠道的可编辑规则草稿"
+    ]
+  },
+  "external_integrations": {
+    "awin": "实现与契约模拟通过，未用本人账户实调",
+    "ai": "实现完成，未配置与实调",
+    "public_tracking": "仅本机测试，未部署公开端点"
+  },
+  "cost": {
+    "paid_api_calls": 0,
+    "dependency_packages_installed": 0,
+    "model_billing": "当前对话实际费用不可由本工具读取",
+    "point_in_time_server_rss_mib": 43.2,
+    "always_on_service_added": false
+  },
+  "limitations": [
+    "无真实本人联盟获批与取链凭证",
+    "无实际订单或银行到账",
+    "京东、淘宝、美团仍需本人后台/开放平台权限",
+    "目录报告不是官方验证",
+    "没有因果推广策略或收益验证"
+  ],
+  "model": {
+    "recommendation": "Terra medium",
+    "actual": "本会话既有模型；工具未提供可核验的具体型号与推理档位，未执行切换"
+  }
+}

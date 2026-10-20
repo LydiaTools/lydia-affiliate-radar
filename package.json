@@ -1,0 +1,13 @@
+{
+  "name": "lydia-affiliate-radar",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "中国大陆个人推广者的跨类目活动研究、链接管理、内容与归因工作台",
+  "engines": { "node": ">=22.13.0" },
+  "scripts": {
+    "start": "node --no-warnings server.mjs",
+    "test": "node --no-warnings --test tests/*.test.mjs",
+    "collect": "node --no-warnings cli.mjs collect"
+  }
+}
